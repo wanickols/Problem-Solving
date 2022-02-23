@@ -1,6 +1,9 @@
 #include "ProblemSolver.h"
 #include <algorithm>
 #include <iostream>	
+#include <sstream>
+#include <unordered_map>
+#include <unordered_set>
 
 using namespace std;
 
@@ -34,6 +37,8 @@ void ProblemSolver::debugInfo(debugClasses infoShown)
 		cout << "Incorrect Debug Flag: " << infoShown;
 		break;
 	}
+
+
 }
 
 
@@ -211,6 +216,8 @@ int ProblemSolver::partition(int arr[], int low, int high)
 	swapArrayElements(arr, i+1, high);
 	return (i + 1);
 }
+
+
 
 void ProblemSolver::debugString()
 {
@@ -421,4 +428,112 @@ inline void ProblemSolver::printVector(std::vector<T>& vec)
 		cout << item << endl;
 	}
 	cout << endl;
+}
+
+std::unique_ptr<std::vector<std::vector<int>>> ProblemSolver::store(std::vector<int>& arr,  bool inOrderOfInsertion)
+{
+	std::unique_ptr<std::vector<std::vector<int>>> freqCalc = std::make_unique< std::vector<std::vector<int>>>();
+	freqCalc->reserve(arr.size()); //this proitizes speed over space, can change if given more info for implementation; aka never resizes, but could have extra space. 
+
+	std::vector<int> answer;
+	answer.reserve(2);
+
+	//Puts ties in order of insertion (actually faster because it doesn't sort by value anywhere. More space required
+	if (inOrderOfInsertion) {
+		std::unordered_map<int, int> checkedNum; //size worst is o(n) * 2
+		bool hasDuplicates = false;
+		std::unordered_set<int> checkedNum2; // size worst is o(n)
+
+		
+
+		
+		// Base Case
+		//o(n)
+		for (int i = 0; i < arr.size(); i++)
+		{
+			int num = arr.at(i);
+			if (checkedNum.find(num) == checkedNum.end())
+			{
+
+				checkedNum[num] = 1;
+
+			}
+			else {
+				hasDuplicates = true;
+				checkedNum.at(num)++;
+			}
+		}
+		//o(n)
+		if (hasDuplicates) {
+			for (int i = 0; i < arr.size(); i++)
+			{
+				int num = arr.at(i);
+				if (checkedNum2.find(num) == checkedNum2.end()) {
+
+					checkedNum2.insert(num);
+					answer.emplace_back(num);
+					answer.emplace_back(checkedNum.at(num));
+					freqCalc->emplace_back(answer); //see note about reserve
+					answer.clear();
+				}
+				else
+					continue;
+			}
+		}
+		else
+		{
+			//o(n)
+			for (int i = 0; i < arr.size(); i++)
+			{
+				int num = arr.at(i);
+				answer.emplace_back(num);
+				answer.emplace_back(1);
+				freqCalc->emplace_back(answer); //see note about reserve
+				answer.clear();
+			}
+
+		}
+
+	}
+	//puts ties in sorted order
+	//Slower, but doesn't have to make any more maps or vectors to run. more space efficient, dramatically slower with larger data sets, doesn't matter with smaller sets. 
+	else{ 
+		//o(nlogn)
+		sort(arr.begin(), arr.end());
+		int previousValue = arr.at(0) +1;
+		for(int i = 0;i < arr.size(); i++)
+		{
+			int num = arr.at(i);
+			if(num == previousValue)
+			{
+				freqCalc->back().back()++; // last answer, last number = frequency of current number. 
+			}else
+			{
+				previousValue = num;
+				answer.emplace_back(num);
+				answer.emplace_back(1);
+				freqCalc->emplace_back(answer);
+				answer.clear();
+			}
+		}
+
+	}
+
+
+	return std::move(freqCalc);
+}
+
+
+std::vector<std::vector<int>> ProblemSolver::sortByFrequency(std::vector<int> arr, bool inOrderOfInsertion)
+{
+
+	std::unique_ptr<std::vector<std::vector<int>>> count = store(arr, inOrderOfInsertion);
+
+	// Sort the count[] array according to frequency (or count)
+	std::sort(count->begin(), count->end(), [](const std::vector<int>& l, const std::vector<int>& r)->bool {
+		return l.back() > r.back();
+		});
+
+
+	return *count;
 }

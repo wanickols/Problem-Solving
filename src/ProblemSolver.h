@@ -3,6 +3,7 @@
 #include <vector>
 #include <string>
 #include <array>
+#include <memory>
 
 
 
@@ -35,7 +36,11 @@ public:
 	void swapNumbersNoThirdVariable(int intArray[], int index1, int index2);
 	void swapNumbersNoThirdVariable(int num1, int num2);
 	
+	
+	std::vector<std::vector<int>> sortByFrequency(std::vector<int> arr, bool inOrderOfInsertion = true);
+
 	void printFibonacci(const int &n);
+
 
 private:
 	template<typename T>
@@ -48,6 +53,8 @@ private:
 	static int fibonacci(const int& n);
 
 	int partition(int arr[], int low, int high);
+	
+	std::unique_ptr<std::vector<std::vector<int>>> store(std::vector<int>& arr, bool inOrderOfInsertion);
 
 	//Debug
 	void debugString();
